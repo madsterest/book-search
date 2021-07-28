@@ -36,25 +36,26 @@ const resolvers = {
       return { token, user };
     },
 
-    saveBook: async (
-      parent,
-      { authors, description, title, bookId, image, link },
-      context
-    ) => {
+    saveBook: async (parent, { input }, context) => {
       if (context.user) {
-          return User.findOneAndUpdate({_id: context.user._id},
-            {$addToSet: {savedBooks: }})
+        const addBook = await User.findOneAndUpdate(
+          { _id: context.user._id },
+          { $addToSet: { savedBooks: input } },
+          { new: true, runValidators: true }
+        );
+        return addBook;
       }
+      throw new AuthenticationError("You need to be signed in");
     },
 
     removeBook: async (parent, { bookId }, context) => {
       if (context.user) {
-        const updateUser = await  User.findOneAndUpdate(
+        const updateUser = await User.findOneAndUpdate(
           { _id: context.user._id },
           { $pull: { savedBooks: { bookId: bookId } } },
           { new: true }
         );
-        return updateUser
+        return updateUser;
       }
       throw new AuthenticationError("You need to be signed in");
     },
